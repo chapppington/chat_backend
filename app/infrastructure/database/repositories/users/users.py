@@ -8,6 +8,7 @@ from infrastructure.database.converters.users.user import (
 from infrastructure.database.gateways.postgres import Database
 from infrastructure.database.models.users.user import UserModel
 from sqlalchemy import (
+    func,
     select,
 )
 
@@ -28,6 +29,13 @@ class SQLAlchemyUserRepository(BaseUserRepository):
     async def get_by_id(self, user_id: UUID) -> UserEntity | None:
         async with self.database.get_read_only_session() as session:
             stmt = select(UserModel).where(UserModel.oid == user_id)
+            res = await session.execute(stmt)
+            result = res.scalar_one_or_none()
+            return user_model_to_entity(result) if result else None
+
+    async def get_by_email(self, email: str) -> UserEntity | None:
+        async with self.database.get_read_only_session() as session:
+            stmt = select(UserModel).where(func.lower(UserModel.email) == email.lower())
             res = await session.execute(stmt)
             result = res.scalar_one_or_none()
             return user_model_to_entity(result) if result else None

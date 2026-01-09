@@ -13,3 +13,6 @@ class BaseUserRepository(ABC):
 
     @abstractmethod
     async def get_by_id(self, user_id: UUID) -> UserEntity | None: ...
+
+    @abstractmethod
+    async def get_by_email(self, email: str) -> UserEntity | None: ...
