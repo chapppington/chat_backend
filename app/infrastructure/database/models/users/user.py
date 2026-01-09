@@ -1,7 +1,11 @@
 from datetime import datetime
 from typing import Optional
+
 from infrastructure.database.models.base import TimedBaseModel
-from sqlalchemy import DateTime, String
+from sqlalchemy import (
+    DateTime,
+    String,
+)
 from sqlalchemy.orm import (
     Mapped,
     mapped_column,
