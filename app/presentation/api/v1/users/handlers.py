@@ -5,8 +5,8 @@ from fastapi import (
     APIRouter,
     Depends,
     File,
-    UploadFile,
     status,
+    UploadFile,
 )
 
 from presentation.api.dependencies import get_current_user_id

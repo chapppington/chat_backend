@@ -1,5 +1,5 @@
-
 from io import BytesIO
+
 from domain.base.file_storage import BaseFileStorage
 
 
