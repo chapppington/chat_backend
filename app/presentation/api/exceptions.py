@@ -6,7 +6,10 @@ from fastapi import (
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from authx.exceptions import MissingTokenError
+from authx.exceptions import (
+    JWTDecodeError,
+    MissingTokenError,
+)
 from presentation.api.schemas import ApiResponse
 
 from application.base.exception import LogicException
@@ -53,7 +56,7 @@ async def application_exception_handler(
 
 async def authx_exception_handler(
     request: Request,
-    exc: MissingTokenError,
+    exc: MissingTokenError | JWTDecodeError,
 ) -> JSONResponse:
     response = ApiResponse(
         errors=[{"message": str(exc), "type": exc.__class__.__name__}],
@@ -116,6 +119,10 @@ def setup_exception_handlers(app: FastAPI) -> None:
     )
     app.add_exception_handler(
         MissingTokenError,
+        authx_exception_handler,
+    )
+    app.add_exception_handler(
+        JWTDecodeError,
         authx_exception_handler,
     )
     app.add_exception_handler(
