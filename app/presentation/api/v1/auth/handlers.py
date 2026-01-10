@@ -11,7 +11,7 @@ from presentation.api.schemas import (
     ApiResponse,
     ErrorResponseSchema,
 )
-from presentation.api.v1.user.schemas import (
+from presentation.api.v1.auth.schemas import (
     LoginRequestSchema,
     RefreshTokenResponseSchema,
     RegisterRequestSchema,
@@ -50,8 +50,8 @@ async def register(
         password=request.password,
         name=request.name,
     )
-    results = await mediator.handle_command(command)
-    user = results[0]
+
+    user, *_ = await mediator.handle_command(command)
 
     return ApiResponse[UserResponseSchema](
         data=UserResponseSchema.from_entity(user),

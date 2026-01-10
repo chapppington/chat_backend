@@ -23,3 +23,4 @@ class UserModel(TimedBaseModel):
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     last_online_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    avatar_path: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)

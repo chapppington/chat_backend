@@ -10,6 +10,7 @@ from infrastructure.database.models.users.user import UserModel
 from sqlalchemy import (
     func,
     select,
+    update,
 )
 
 from domain.users.entities import UserEntity
@@ -39,3 +40,9 @@ class SQLAlchemyUserRepository(BaseUserRepository):
             res = await session.execute(stmt)
             result = res.scalar_one_or_none()
             return user_model_to_entity(result) if result else None
+
+    async def update_avatar_path(self, user_id: UUID, avatar_path: str | None) -> None:
+        async with self.database.get_session() as session:
+            stmt = update(UserModel).where(UserModel.oid == user_id).values(avatar_path=avatar_path)
+            await session.execute(stmt)
+            await session.commit()

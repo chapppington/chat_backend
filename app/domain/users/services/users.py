@@ -1,9 +1,14 @@
 import re
 from dataclasses import dataclass
-from uuid import UUID
+from io import BytesIO
+from uuid import (
+    UUID,
+    uuid4,
+)
 
 import bcrypt
 
+from domain.base.file_storage import BaseFileStorage
 from domain.users.entities import UserEntity
 from domain.users.exceptions import (
     EmptyPasswordException,
@@ -26,6 +31,7 @@ MIN_PASSWORD_LENGTH = 8
 @dataclass
 class UserService:
     user_repository: BaseUserRepository
+    file_storage: BaseFileStorage
 
     def _validate_password(self, password: str) -> None:
         if not password:
@@ -101,3 +107,37 @@ class UserService:
             raise InvalidCredentialsException()
 
         return user
+
+    async def upload_avatar(
+        self,
+        user_id: UUID,
+        file_obj: BytesIO,
+        filename: str,
+    ) -> UserEntity:
+        """Upload avatar for user and update avatar_path."""
+        # Check if user exists (will raise UserNotFoundException if not)
+        await self.get_by_id(user_id)
+
+        # Extract file extension from original filename
+        file_extension = ""
+        if "." in filename:
+            file_extension = "." + filename.rsplit(".", 1)[1]
+
+        # Generate random filename with UUID
+        random_filename = f"{uuid4()}{file_extension}"
+
+        # Generate avatar path: avatars/{user_id}/{random_filename}
+        avatar_path = f"avatars/{user_id}/{random_filename}"
+
+        # Upload file to storage
+        await self.file_storage.upload_file(file_obj, avatar_path)
+
+        # Update avatar_path in repository
+        await self.user_repository.update_avatar_path(user_id, avatar_path)
+
+        # Return updated user
+        updated_user = await self.user_repository.get_by_id(user_id)
+        if not updated_user:
+            raise UserNotFoundException(user_id=user_id)
+
+        return updated_user

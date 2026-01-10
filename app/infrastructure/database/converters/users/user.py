@@ -14,6 +14,7 @@ def user_entity_to_model(entity: UserEntity) -> UserModel:
         hashed_password=entity.hashed_password,
         name=entity.name.as_generic_type(),
         last_online_at=entity.last_online_at,
+        avatar_path=entity.avatar_path,
         created_at=entity.created_at,
         updated_at=entity.updated_at,
     )
@@ -26,6 +27,7 @@ def user_model_to_entity(model: UserModel) -> UserEntity:
         hashed_password=model.hashed_password,
         name=UserNameValueObject(value=model.name),
         last_online_at=model.last_online_at,
+        avatar_path=model.avatar_path,
         created_at=model.created_at,
         updated_at=model.updated_at,
     )

@@ -16,3 +16,6 @@ class BaseUserRepository(ABC):
 
     @abstractmethod
     async def get_by_email(self, email: str) -> UserEntity | None: ...
+
+    @abstractmethod
+    async def update_avatar_path(self, user_id: UUID, avatar_path: str | None) -> None: ...

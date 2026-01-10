@@ -2,9 +2,10 @@ from pydantic import Field
 from pydantic_settings import SettingsConfigDict
 
 from settings.postgres import PostgresConfig
+from settings.s3 import S3Config
 
 
-class Config(PostgresConfig):
+class Config(PostgresConfig, S3Config):
     """Main application configuration."""
 
     jwt_secret_key: str = Field(

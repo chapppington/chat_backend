@@ -15,3 +15,4 @@ class UserEntity(BaseEntity):
     hashed_password: str
     name: UserNameValueObject
     last_online_at: Optional[datetime] = None
+    avatar_path: Optional[str] = None

@@ -27,3 +27,9 @@ class DummyInMemoryUserRepository(BaseUserRepository):
             return next(user for user in self._saved_users if user.email.as_generic_type().lower() == search_term)
         except StopIteration:
             return None
+
+    async def update_avatar_path(self, user_id: UUID, avatar_path: str | None) -> None:
+        for user in self._saved_users:
+            if user.oid == user_id:
+                user.avatar_path = avatar_path
+                return
