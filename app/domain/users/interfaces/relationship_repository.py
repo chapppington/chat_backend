@@ -23,14 +23,6 @@ class BaseRelationshipRepository(ABC):
         ...
 
     @abstractmethod
-    async def delete_user_node(
-        self,
-        user_id: UUID,
-    ) -> None:
-        """Delete a User node from Neo4j."""
-        ...
-
-    @abstractmethod
     async def add_friend(
         self,
         user_id: UUID,

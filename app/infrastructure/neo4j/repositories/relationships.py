@@ -37,18 +37,6 @@ class Neo4jRelationshipRepository(BaseRelationshipRepository):
                 city=city or "",
             )
 
-    async def delete_user_node(
-        self,
-        user_id: UUID,
-    ) -> None:
-        """Delete a User node from Neo4j."""
-        async with self.neo4j_client.get_session() as session:
-            query = """
-            MATCH (u:User {user_id: $user_id})
-            DETACH DELETE u
-            """
-            await session.run(query, user_id=str(user_id))
-
     async def add_friend(
         self,
         user_id: UUID,

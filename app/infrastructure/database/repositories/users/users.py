@@ -8,7 +8,6 @@ from infrastructure.database.converters.users.user import (
 from infrastructure.database.gateways.postgres import Database
 from infrastructure.database.models.users.user import UserModel
 from sqlalchemy import (
-    delete,
     func,
     select,
     update,
@@ -45,11 +44,5 @@ class SQLAlchemyUserRepository(BaseUserRepository):
     async def update_avatar_path(self, user_id: UUID, avatar_path: str | None) -> None:
         async with self.database.get_session() as session:
             stmt = update(UserModel).where(UserModel.oid == user_id).values(avatar_path=avatar_path)
-            await session.execute(stmt)
-            await session.commit()
-
-    async def delete(self, user_id: UUID) -> None:
-        async with self.database.get_session() as session:
-            stmt = delete(UserModel).where(UserModel.oid == user_id)
             await session.execute(stmt)
             await session.commit()

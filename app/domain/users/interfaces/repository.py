@@ -19,6 +19,3 @@ class BaseUserRepository(ABC):
 
     @abstractmethod
     async def update_avatar_path(self, user_id: UUID, avatar_path: str | None) -> None: ...
-
-    @abstractmethod
-    async def delete(self, user_id: UUID) -> None: ...
