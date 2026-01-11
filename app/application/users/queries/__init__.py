@@ -1,3 +1,15 @@
+from application.users.queries.relationships import (
+    CheckRelationshipQuery,
+    CheckRelationshipQueryHandler,
+    GetFollowersQuery,
+    GetFollowersQueryHandler,
+    GetFollowingQuery,
+    GetFollowingQueryHandler,
+    GetFriendsQuery,
+    GetFriendsQueryHandler,
+    GetMutualFriendsQuery,
+    GetMutualFriendsQueryHandler,
+)
 from application.users.queries.users import (
     AuthenticateUserQuery,
     AuthenticateUserQueryHandler,
@@ -11,4 +23,14 @@ __all__ = [
     "AuthenticateUserQueryHandler",
     "GetUserByIdQuery",
     "GetUserByIdQueryHandler",
+    "GetFriendsQuery",
+    "GetFriendsQueryHandler",
+    "GetFollowersQuery",
+    "GetFollowersQueryHandler",
+    "GetFollowingQuery",
+    "GetFollowingQueryHandler",
+    "GetMutualFriendsQuery",
+    "GetMutualFriendsQueryHandler",
+    "CheckRelationshipQuery",
+    "CheckRelationshipQueryHandler",
 ]

@@ -2,6 +2,8 @@ from functools import lru_cache
 
 from infrastructure.database.gateways.postgres import Database
 from infrastructure.database.repositories.users.users import SQLAlchemyUserRepository
+from infrastructure.neo4j.client import Neo4jClient
+from infrastructure.neo4j.repositories.relationships import Neo4jRelationshipRepository
 from infrastructure.s3.client import S3Client
 from infrastructure.s3.storage import S3FileStorage
 from punq import (
@@ -11,18 +13,39 @@ from punq import (
 
 from application.mediator import Mediator
 from application.users.commands import (
+    AddFriendCommand,
+    AddFriendCommandHandler,
+    AddRelationshipCommand,
+    AddRelationshipCommandHandler,
     CreateUserCommand,
     CreateUserCommandHandler,
+    FollowUserCommand,
+    FollowUserCommandHandler,
+    RemoveFriendCommand,
+    RemoveFriendCommandHandler,
+    UnfollowUserCommand,
+    UnfollowUserCommandHandler,
     UploadAvatarCommand,
     UploadAvatarCommandHandler,
 )
 from application.users.queries import (
     AuthenticateUserQuery,
     AuthenticateUserQueryHandler,
+    CheckRelationshipQuery,
+    CheckRelationshipQueryHandler,
+    GetFollowersQuery,
+    GetFollowersQueryHandler,
+    GetFollowingQuery,
+    GetFollowingQueryHandler,
+    GetFriendsQuery,
+    GetFriendsQueryHandler,
+    GetMutualFriendsQuery,
+    GetMutualFriendsQueryHandler,
     GetUserByIdQuery,
     GetUserByIdQueryHandler,
 )
 from domain.base.file_storage import BaseFileStorage
+from domain.users.interfaces.relationship_repository import BaseRelationshipRepository
 from domain.users.interfaces.repository import BaseUserRepository
 from domain.users.services import UserService
 from settings.config import Config
@@ -62,10 +85,27 @@ def _init_container() -> Container:
 
     container.register(BaseFileStorage, factory=init_file_storage, scope=Scope.singleton)
 
+    # Регистрируем Neo4jClient
+    def init_neo4j_client() -> Neo4jClient:
+        return Neo4jClient(config=config)
+
+    container.register(Neo4jClient, factory=init_neo4j_client, scope=Scope.singleton)
+
     # Регистрируем репозитории
     container.register(
         BaseUserRepository,
         SQLAlchemyUserRepository,
+    )
+
+    # Регистрируем Relationship Repository
+    def init_relationship_repository() -> BaseRelationshipRepository:
+        neo4j_client = container.resolve(Neo4jClient)
+        return Neo4jRelationshipRepository(neo4j_client=neo4j_client)
+
+    container.register(
+        BaseRelationshipRepository,
+        factory=init_relationship_repository,
+        scope=Scope.singleton,
     )
 
     # Регистрируем доменные сервисы
@@ -75,11 +115,23 @@ def _init_container() -> Container:
     # Users
     container.register(CreateUserCommandHandler)
     container.register(UploadAvatarCommandHandler)
+    # Relationships
+    container.register(AddFriendCommandHandler)
+    container.register(RemoveFriendCommandHandler)
+    container.register(FollowUserCommandHandler)
+    container.register(UnfollowUserCommandHandler)
+    container.register(AddRelationshipCommandHandler)
 
     # Регистрируем query handlers
     # Users
     container.register(AuthenticateUserQueryHandler)
     container.register(GetUserByIdQueryHandler)
+    # Relationships
+    container.register(GetFriendsQueryHandler)
+    container.register(GetFollowersQueryHandler)
+    container.register(GetFollowingQueryHandler)
+    container.register(GetMutualFriendsQueryHandler)
+    container.register(CheckRelationshipQueryHandler)
 
     # Инициализируем медиатор
     def init_mediator() -> Mediator:
@@ -95,6 +147,27 @@ def _init_container() -> Container:
             UploadAvatarCommand,
             [container.resolve(UploadAvatarCommandHandler)],
         )
+        # Relationships
+        mediator.register_command(
+            AddFriendCommand,
+            [container.resolve(AddFriendCommandHandler)],
+        )
+        mediator.register_command(
+            RemoveFriendCommand,
+            [container.resolve(RemoveFriendCommandHandler)],
+        )
+        mediator.register_command(
+            FollowUserCommand,
+            [container.resolve(FollowUserCommandHandler)],
+        )
+        mediator.register_command(
+            UnfollowUserCommand,
+            [container.resolve(UnfollowUserCommandHandler)],
+        )
+        mediator.register_command(
+            AddRelationshipCommand,
+            [container.resolve(AddRelationshipCommandHandler)],
+        )
 
         # Регистрируем queries
         # Users
@@ -105,6 +178,27 @@ def _init_container() -> Container:
         mediator.register_query(
             GetUserByIdQuery,
             container.resolve(GetUserByIdQueryHandler),
+        )
+        # Relationships
+        mediator.register_query(
+            GetFriendsQuery,
+            container.resolve(GetFriendsQueryHandler),
+        )
+        mediator.register_query(
+            GetFollowersQuery,
+            container.resolve(GetFollowersQueryHandler),
+        )
+        mediator.register_query(
+            GetFollowingQuery,
+            container.resolve(GetFollowingQueryHandler),
+        )
+        mediator.register_query(
+            GetMutualFriendsQuery,
+            container.resolve(GetMutualFriendsQueryHandler),
+        )
+        mediator.register_query(
+            CheckRelationshipQuery,
+            container.resolve(CheckRelationshipQueryHandler),
         )
 
         return mediator

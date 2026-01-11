@@ -1,11 +1,12 @@
 from pydantic import Field
 from pydantic_settings import SettingsConfigDict
 
+from settings.neo4j import Neo4jConfig
 from settings.postgres import PostgresConfig
 from settings.s3 import S3Config
 
 
-class Config(PostgresConfig, S3Config):
+class Config(PostgresConfig, S3Config, Neo4jConfig):
     """Main application configuration."""
 
     jwt_secret_key: str = Field(

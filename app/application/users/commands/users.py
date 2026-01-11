@@ -7,6 +7,8 @@ from application.base.command import (
     BaseCommandHandler,
 )
 from domain.users.entities import UserEntity
+from domain.users.interfaces.relationship_repository import BaseRelationshipRepository
+from domain.users.interfaces.repository import BaseUserRepository
 from domain.users.services import UserService
 
 
@@ -22,13 +24,40 @@ class CreateUserCommandHandler(
     BaseCommandHandler[CreateUserCommand, UserEntity],
 ):
     user_service: UserService
+    user_repository: BaseUserRepository
+    relationship_repository: BaseRelationshipRepository
 
     async def handle(self, command: CreateUserCommand) -> UserEntity:
+        # Step 1: Create user in PostgreSQL
         result = await self.user_service.create_user(
             email=command.email,
             password=command.password,
             name=command.name,
         )
+
+        # Step 2: Create user node in Neo4j
+        # If this fails, we need to rollback PostgreSQL (compensating transaction)
+        name_parts = command.name.strip().split(maxsplit=1)
+        first_name = name_parts[0] if name_parts else command.name
+        last_name = name_parts[1] if len(name_parts) > 1 else ""
+
+        try:
+            await self.relationship_repository.create_user_node(
+                user_id=result.oid,
+                first_name=first_name,
+                last_name=last_name,
+                city=None,  # Can be added later if needed
+            )
+        except Exception as e:
+            # Compensating transaction: rollback PostgreSQL if Neo4j fails
+            try:
+                await self.user_repository.delete(result.oid)
+            except Exception:
+                # Log rollback error but re-raise original exception
+                # In production, you might want to use proper logging here
+                pass
+            raise e
+
         return result
 
 

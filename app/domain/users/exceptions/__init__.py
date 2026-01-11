@@ -1,3 +1,7 @@
+from .relationships import (
+    CannotAddSelfException,
+    RelationshipException,
+)
 from .users import (
     EmptyEmailException,
     EmptyPasswordException,
@@ -25,4 +29,6 @@ __all__ = (
     "UserAlreadyExistsException",
     "UserNameTooLongException",
     "UserNotFoundException",
+    "RelationshipException",
+    "CannotAddSelfException",
 )
