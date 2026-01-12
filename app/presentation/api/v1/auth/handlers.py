@@ -11,7 +11,7 @@ from presentation.api.schemas import (
     ApiResponse,
     ErrorResponseSchema,
 )
-from presentation.api.v1.user.schemas import (
+from presentation.api.v1.auth.schemas import (
     LoginRequestSchema,
     RefreshTokenResponseSchema,
     RegisterRequestSchema,
