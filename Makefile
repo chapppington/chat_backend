@@ -1,6 +1,8 @@
 DC = docker compose
 STORAGES_FILE = docker_compose/storages.yaml
 STORAGES_CONTAINER = postgres
+MESSAGING_FILE = docker_compose/messaging.yaml
+MESSAGING_CONTAINER = main-kafka
 LOGS = docker logs
 ENV = --env-file .env
 EXEC = docker exec -it
@@ -10,11 +12,11 @@ APP_CONTAINER = main-app
 
 .PHONY: all
 all:
-	${DC} -f ${STORAGES_FILE} -f ${APP_FILE} ${ENV} up --build -d
+	${DC} -f ${STORAGES_FILE} -f ${APP_FILE} -f ${MESSAGING_FILE} ${ENV_FILE} up --build -d
 
 .PHONY: all-down
 all-down:
-	${DC} -f ${STORAGES_FILE} -f ${APP_FILE} ${ENV} down
+	${DC} -f ${STORAGES_FILE} -f ${APP_FILE} -f ${MESSAGING_FILE} ${ENV_FILE} down
 
 .PHONY: app-logs
 app-logs:
@@ -49,6 +51,19 @@ storages-logs:
 .PHONY: postgres 
 postgres:
 	${EXEC} ${STORAGES_CONTAINER} psql -U postgres
+
+
+.PHONY: messaging
+messaging:
+	${DC} -f ${MESSAGING_FILE} ${ENV} up  --build -d
+
+.PHONY: messaging-down
+messaging-down:
+	${DC} -f ${MESSAGING_FILE} ${ENV} down
+
+.PHONY: messaging-logs
+messaging-logs:
+	${LOGS} ${MESSAGING_CONTAINER} -f
 
 
 .PHONY: precommit 
