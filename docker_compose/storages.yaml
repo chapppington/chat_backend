@@ -8,6 +8,7 @@ services:
       - postgres_data:/var/lib/postgresql
     env_file:
       - ../.env
+    command: postgres -c wal_level=logical
     networks:
       - backend
     healthcheck:

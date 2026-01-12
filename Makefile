@@ -9,14 +9,16 @@ EXEC = docker exec -it
 EXEC_NO_TTY = docker exec
 APP_FILE = docker_compose/app.yaml
 APP_CONTAINER = main-app
+WORKER_FILE = docker_compose/worker.yaml
+WORKER_CONTAINER = outbox-worker
 
 .PHONY: all
 all:
-	${DC} -f ${STORAGES_FILE} -f ${APP_FILE} -f ${MESSAGING_FILE} ${ENV_FILE} up --build -d
+	${DC} -f ${STORAGES_FILE} -f ${APP_FILE} -f ${MESSAGING_FILE} -f ${WORKER_FILE} ${ENV_FILE} up --build -d
 
 .PHONY: all-down
 all-down:
-	${DC} -f ${STORAGES_FILE} -f ${APP_FILE} -f ${MESSAGING_FILE} ${ENV_FILE} down
+	${DC} -f ${STORAGES_FILE} -f ${APP_FILE} -f ${MESSAGING_FILE} -f ${WORKER_FILE} ${ENV_FILE} down
 
 .PHONY: app-logs
 app-logs:
@@ -82,3 +84,15 @@ migrate:
 .PHONY: test 
 test:
 	${EXEC} ${APP_CONTAINER} pytest
+
+.PHONY: worker-up
+worker-up:
+	${DC} -f ${STORAGES_FILE} -f ${MESSAGING_FILE} -f ${WORKER_FILE} ${ENV} up --build -d
+
+.PHONY: worker-down
+worker-down:
+	${DC} -f ${WORKER_FILE} ${ENV} down
+
+.PHONY: worker-logs
+worker-logs:
+	${LOGS} ${WORKER_CONTAINER} -f
