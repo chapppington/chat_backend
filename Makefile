@@ -14,11 +14,11 @@ WORKER_CONTAINER = outbox-worker
 
 .PHONY: all
 all:
-	${DC} -f ${STORAGES_FILE} -f ${APP_FILE} -f ${MESSAGING_FILE} -f ${WORKER_FILE} ${ENV_FILE} up --build -d
+	${DC} -f ${STORAGES_FILE} -f ${APP_FILE} -f ${MESSAGING_FILE} -f ${WORKER_FILE} ${ENV} up --build -d
 
 .PHONY: all-down
 all-down:
-	${DC} -f ${STORAGES_FILE} -f ${APP_FILE} -f ${MESSAGING_FILE} -f ${WORKER_FILE} ${ENV_FILE} down
+	${DC} -f ${STORAGES_FILE} -f ${APP_FILE} -f ${MESSAGING_FILE} -f ${WORKER_FILE} ${ENV} down
 
 .PHONY: app-logs
 app-logs:

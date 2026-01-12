@@ -38,4 +38,5 @@ volumes:
 
 networks:
   backend:
+    name: chat_backend
     driver: bridge
