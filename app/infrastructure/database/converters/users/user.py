@@ -13,7 +13,6 @@ def user_entity_to_model(entity: UserEntity) -> UserModel:
         email=entity.email.as_generic_type(),
         hashed_password=entity.hashed_password,
         name=entity.name.as_generic_type(),
-        last_online_at=entity.last_online_at,
         created_at=entity.created_at,
         updated_at=entity.updated_at,
     )
@@ -25,7 +24,6 @@ def user_model_to_entity(model: UserModel) -> UserEntity:
         email=EmailValueObject(value=model.email),
         hashed_password=model.hashed_password,
         name=UserNameValueObject(value=model.name),
-        last_online_at=model.last_online_at,
         created_at=model.created_at,
         updated_at=model.updated_at,
     )

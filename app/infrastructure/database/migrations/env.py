@@ -13,6 +13,7 @@ from settings.config import Config
 from infrastructure.database.models.base import BaseModel
 
 from infrastructure.database.models.users import UserModel  # noqa: F401
+from infrastructure.database.models.outbox import OutboxEventModel  # noqa: F401
 
 
 config = context.config

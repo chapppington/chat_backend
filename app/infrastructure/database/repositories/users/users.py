@@ -1,11 +1,18 @@
 from dataclasses import dataclass
-from uuid import UUID
+from uuid import (
+    UUID,
+    uuid4,
+)
 
 from infrastructure.database.converters.users.user import (
     user_entity_to_model,
     user_model_to_entity,
 )
 from infrastructure.database.gateways.postgres import Database
+from infrastructure.database.models.outbox.outbox import (
+    OutboxEventModel,
+    OutboxEventStatus,
+)
 from infrastructure.database.models.users.user import UserModel
 from sqlalchemy import (
     func,
@@ -24,7 +31,22 @@ class SQLAlchemyUserRepository(BaseUserRepository):
         async with self.database.get_session() as session:
             user_model = user_entity_to_model(user)
             session.add(user_model)
-            await session.commit()
+
+            # Создаем событие в outbox в рамках той же транзакции
+            outbox_event = OutboxEventModel(
+                oid=uuid4(),
+                event_type="user.created",
+                aggregate_type="user",
+                aggregate_id=str(user.oid),
+                payload={
+                    "user_id": str(user.oid),
+                    "email": user.email.as_generic_type(),
+                    "name": user.name.as_generic_type(),
+                    "created_at": user.created_at.isoformat() if user.created_at else None,
+                },
+                status=OutboxEventStatus.PENDING.value,
+            )
+            session.add(outbox_event)
 
     async def get_by_id(self, user_id: UUID) -> UserEntity | None:
         async with self.database.get_read_only_session() as session:
