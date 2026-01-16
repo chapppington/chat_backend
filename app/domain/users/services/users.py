@@ -137,7 +137,5 @@ class UserService:
 
         # Return updated user
         updated_user = await self.user_repository.get_by_id(user_id)
-        if not updated_user:
-            raise UserNotFoundException(user_id=user_id)
 
         return updated_user

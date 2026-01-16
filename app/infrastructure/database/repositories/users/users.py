@@ -5,7 +5,7 @@ from infrastructure.database.converters.users.user import (
     user_entity_to_model,
     user_model_to_entity,
 )
-from infrastructure.database.gateways.postgres import Database
+from infrastructure.database.gateways.postgres import SQLDatabase
 from infrastructure.database.models.users.user import UserModel
 from sqlalchemy import (
     func,
@@ -19,7 +19,7 @@ from domain.users.interfaces.repository import BaseUserRepository
 
 @dataclass
 class SQLAlchemyUserRepository(BaseUserRepository):
-    database: Database
+    database: SQLDatabase
 
     async def add(self, user: UserEntity) -> None:
         async with self.database.get_session() as session:

@@ -2,8 +2,9 @@
 
 from io import BytesIO
 
-from domain.base.file_storage import BaseFileStorage
 from infrastructure.s3.client import S3Client
+
+from domain.base.file_storage import BaseFileStorage
 
 
 class S3FileStorage(BaseFileStorage):

@@ -7,8 +7,8 @@ from presentation.api.v1 import v1_router
 
 def create_app() -> FastAPI:
     app = FastAPI(
-        title="CRM",
-        description="CRM",
+        title="Chat API",
+        description="A RESTful API for chat applications, offering authentication, user management, and more.",
         docs_url="/api/docs",
         debug=True,
     )
