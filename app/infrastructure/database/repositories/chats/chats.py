@@ -25,3 +25,6 @@ class MongoDBChatsRepository(BaseChatsRepository, BaseMongoDBRepository):
 
     async def add_chat(self, chat: ChatEntity) -> None:
         await self._collection.insert_one(chat_entity_to_document(chat))
+
+    async def delete_chat_by_oid(self, chat_oid: str) -> None:
+        await self._collection.delete_one(filter={"oid": chat_oid})

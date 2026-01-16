@@ -22,3 +22,6 @@ class DummyInMemoryChatsRepository(BaseChatsRepository):
 
     async def add_chat(self, chat: ChatEntity) -> None:
         self._saved_chats.append(chat)
+
+    async def delete_chat_by_oid(self, chat_oid: str) -> None:
+        self._saved_chats[:] = [chat for chat in self._saved_chats if str(chat.oid) != chat_oid]
