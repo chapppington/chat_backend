@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import (
 )
 
 
-class Database:
+class SQLDatabase:
     def __init__(self, url: str, ro_url: str) -> None:
         self._async_engine = create_async_engine(
             url=url,

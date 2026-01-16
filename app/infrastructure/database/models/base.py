@@ -1,7 +1,10 @@
 import datetime
 from uuid import UUID
 
-from sqlalchemy import sql
+from sqlalchemy import (
+    MetaData,
+    sql,
+)
 from sqlalchemy.dialects.postgresql import UUID as UUIDType
 from sqlalchemy.orm import (
     DeclarativeBase,
@@ -10,7 +13,19 @@ from sqlalchemy.orm import (
 )
 
 
+metadata = MetaData(
+    naming_convention={
+        "pk": "pk_%(table_name)s",
+        "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+        "ix": "ix_%(table_name)s_%(column_0_name)s",
+        "uq": "uq_%(table_name)s_%(column_0_name)s",
+        "ck": "ck_%(table_name)s_%(constraint_name)s",
+    },
+)
+
+
 class BaseModel(DeclarativeBase):
+    metadata = metadata
     repr_cols_num = 3
     repr_cols = tuple()
 
