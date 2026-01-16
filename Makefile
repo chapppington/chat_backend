@@ -64,6 +64,15 @@ migrations:
 migrate:
 	${EXEC_NO_TTY} ${APP_CONTAINER} alembic upgrade head
 
+.PHONY: downgrade
+downgrade:
+	${EXEC_NO_TTY} ${APP_CONTAINER} alembic downgrade base
+
+.PHONY: reapply-migrations
+reapply-migrations:
+	${EXEC_NO_TTY} ${APP_CONTAINER} alembic downgrade base
+	${EXEC_NO_TTY} ${APP_CONTAINER} alembic upgrade head
+
 .PHONY: test 
 test:
 	${EXEC} ${APP_CONTAINER} pytest
