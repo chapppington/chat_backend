@@ -7,6 +7,7 @@ from fastapi import (
     status,
 )
 
+from infrastructure.websockets.manager import BaseConnectionManager
 from presentation.api.dependencies import get_current_user_id
 from presentation.api.schemas import (
     ApiResponse,
@@ -134,9 +135,20 @@ async def create_message(
     )
 
     message, *_ = await mediator.handle_command(command)
+    message_response = MessageResponseSchema.from_entity(message)
+
+    # Отправляем уведомление всем подключенным к чату клиентам через WebSocket
+    connection_manager: BaseConnectionManager = container.resolve(BaseConnectionManager)
+    await connection_manager.send_json_to_all(
+        key=str(chat_id),
+        data={
+            "type": "new_message",
+            "message": message_response.model_dump(mode="json"),
+        },
+    )
 
     return ApiResponse[MessageResponseSchema](
-        data=MessageResponseSchema.from_entity(message),
+        data=message_response,
     )
 
 

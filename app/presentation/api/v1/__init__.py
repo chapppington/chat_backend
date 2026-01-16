@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from presentation.api.v1.auth.handlers import router as auth_router
 from presentation.api.v1.chats.handlers import router as chats_router
+from presentation.api.v1.chats.websockets.messages import router as ws_messages_router
 from presentation.api.v1.users.handlers import router as users_router
 
 
@@ -10,3 +11,4 @@ v1_router = APIRouter()
 v1_router.include_router(auth_router)
 v1_router.include_router(users_router)
 v1_router.include_router(chats_router)
+v1_router.include_router(ws_messages_router)

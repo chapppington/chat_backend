@@ -6,6 +6,10 @@ from infrastructure.database.repositories.chats.messages import MongoDBMessagesR
 from infrastructure.database.repositories.users.users import SQLAlchemyUserRepository
 from infrastructure.s3.client import S3Client
 from infrastructure.s3.storage import S3FileStorage
+from infrastructure.websockets.manager import (
+    BaseConnectionManager,
+    ConnectionManager,
+)
 from motor.motor_asyncio import AsyncIOMotorClient
 from punq import (
     Container,
@@ -58,6 +62,13 @@ def _init_container() -> Container:
     # Регистрируем конфиг
     config = Config()
     container.register(Config, instance=config, scope=Scope.singleton)
+
+    # WebSocket Manager
+    container.register(
+        BaseConnectionManager,
+        instance=ConnectionManager(),
+        scope=Scope.singleton,
+    )
 
     # Регистрируем SQL Database
     def init_sql_database() -> SQLDatabase:
