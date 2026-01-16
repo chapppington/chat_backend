@@ -9,7 +9,7 @@ class MongoConfig(BaseSettings):
     """MongoDB configuration settings."""
 
     mongo_host: str = Field(
-        default="localhost",
+        default="mongodb",
         alias="MONGO_HOST",
     )
 

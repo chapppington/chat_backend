@@ -17,6 +17,11 @@ from domain.base.exceptions import (
     ApplicationException,
     DomainException,
 )
+from domain.chats.exceptions.chats import (
+    ChatAlreadyExistsException,
+    ChatException,
+    ChatNotFoundException,
+)
 from domain.users.exceptions import (
     InvalidCredentialsException,
     UserAlreadyExistsException,
@@ -36,6 +41,13 @@ async def application_exception_handler(
             if isinstance(exc, (InvalidCredentialsException, UserNotFoundException)):
                 status_code = status.HTTP_401_UNAUTHORIZED
             elif isinstance(exc, UserAlreadyExistsException):
+                status_code = status.HTTP_409_CONFLICT
+            else:
+                status_code = status.HTTP_400_BAD_REQUEST
+        elif isinstance(exc, ChatException):
+            if isinstance(exc, ChatNotFoundException):
+                status_code = status.HTTP_404_NOT_FOUND
+            elif isinstance(exc, ChatAlreadyExistsException):
                 status_code = status.HTTP_409_CONFLICT
             else:
                 status_code = status.HTTP_400_BAD_REQUEST
