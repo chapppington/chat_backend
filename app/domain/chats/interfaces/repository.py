@@ -3,8 +3,12 @@ from abc import (
     abstractmethod,
 )
 from dataclasses import dataclass
+from typing import Iterable
+from uuid import UUID
 
-from domain.chats.entities import ChatEntity
+from domain.chats.entities.chats import ChatEntity
+from domain.chats.entities.messages import MessageEntity
+from domain.chats.filters.messages import GetMessagesFilters
 
 
 @dataclass
@@ -18,5 +22,15 @@ class BaseChatsRepository(ABC):
     @abstractmethod
     async def add_chat(self, chat: ChatEntity) -> None: ...
 
+
+@dataclass
+class BaseMessagesRepository(ABC):
     @abstractmethod
-    async def delete_chat_by_oid(self, chat_oid: str) -> None: ...
+    async def add_message(self, message: MessageEntity) -> None: ...
+
+    @abstractmethod
+    async def get_messages(
+        self,
+        chat_id: UUID,
+        filters: GetMessagesFilters,
+    ) -> tuple[Iterable[MessageEntity], int]: ...

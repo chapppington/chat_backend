@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from infrastructure.database.gateways.postgres import Database
+from infrastructure.database.gateways.postgres import SQLDatabase
 from infrastructure.database.repositories.users.users import SQLAlchemyUserRepository
 from infrastructure.s3.client import S3Client
 from infrastructure.s3.storage import S3FileStorage
@@ -40,14 +40,14 @@ def _init_container() -> Container:
     config = Config()
     container.register(Config, instance=config, scope=Scope.singleton)
 
-    # Регистрируем Database
-    def init_database() -> Database:
-        return Database(
+    # Регистрируем SQL Database
+    def init_sql_database() -> SQLDatabase:
+        return SQLDatabase(
             url=config.postgres_connection_uri,
             ro_url=config.postgres_connection_uri,
         )
 
-    container.register(Database, factory=init_database, scope=Scope.singleton)
+    container.register(SQLDatabase, factory=init_sql_database, scope=Scope.singleton)
 
     # Регистрируем S3Client
     def init_s3_client() -> S3Client:
