@@ -48,58 +48,75 @@ class OutboxWorker:
         logger.info("Outbox worker stopped")
 
     async def process_events(self) -> None:
-        """Process pending outbox events."""
+        """Process pending outbox events.
+
+        Uses SELECT FOR UPDATE SKIP LOCKED to atomically claim events,
+        preventing multiple workers from processing the same event.
+
+        """
         while self._running:
             try:
-                # Получаем список событий для обработки
-                async with self.database.get_read_only_session() as session:
+                # Атомарно захватываем события для обработки с помощью SELECT FOR UPDATE SKIP LOCKED
+                # SKIP LOCKED пропускает строки, заблокированные другими транзакциями
+                # Это гарантирует, что каждый worker получит уникальные события
+                async with self.database.get_session() as session:
                     stmt = (
                         select(OutboxEventModel)
                         .where(OutboxEventModel.status == OutboxEventStatus.PENDING.value)
+                        .with_for_update(skip_locked=True)
                         .limit(self.batch_size)
                         .order_by(OutboxEventModel.created_at)
                     )
                     result = await session.execute(stmt)
                     events = result.scalars().all()
 
-                if not events:
-                    await asyncio.sleep(self.poll_interval)
-                    continue
+                    if not events:
+                        await session.commit()
+                        await asyncio.sleep(self.poll_interval)
+                        continue
 
-                logger.info(f"Found {len(events)} pending events to process")
+                    logger.info(f"Found {len(events)} pending events to process")
 
-                # Обрабатываем каждое событие в отдельной транзакции
-                for event in events:
-                    try:
-                        # Отправляем событие в Kafka
-                        await self.kafka_producer.send_event(
-                            event_type=event.event_type,
-                            aggregate_type=event.aggregate_type,
-                            aggregate_id=event.aggregate_id,
-                            payload=event.payload,
-                        )
+                    # Обрабатываем каждое событие
+                    processed_count = 0
+                    for event in events:
+                        try:
+                            # Отправляем событие в Kafka
+                            await self.kafka_producer.send_event(
+                                event_type=event.event_type,
+                                aggregate_type=event.aggregate_type,
+                                aggregate_id=event.aggregate_id,
+                                payload=event.payload,
+                            )
 
-                        # Обновляем статус события в отдельной транзакции
-                        async with self.database.get_session() as update_session:
+                            # Обновляем статус события в той же транзакции
                             update_stmt = (
                                 update(OutboxEventModel)
                                 .where(OutboxEventModel.oid == event.oid)
+                                .where(OutboxEventModel.status == OutboxEventStatus.PENDING.value)
                                 .values(
                                     status=OutboxEventStatus.PROCESSED.value,
                                     processed_at=datetime.utcnow().isoformat(),
                                 )
                             )
-                            await update_session.execute(update_stmt)
-                            # Commit происходит автоматически при выходе из контекста
+                            await session.execute(update_stmt)
+                            processed_count += 1
 
-                        logger.info(f"Processed event {event.oid} of type {event.event_type}")
-                    except Exception as e:
-                        logger.error(
-                            f"Error processing event {event.oid}: {e}",
-                            exc_info=True,
-                        )
-                        # В случае ошибки событие остается со статусом PENDING
-                        # и будет обработано в следующей итерации
+                            logger.info(f"Processed event {event.oid} of type {event.event_type}")
+                        except Exception as e:
+                            logger.error(
+                                f"Error processing event {event.oid}: {e}",
+                                exc_info=True,
+                            )
+                            # В случае ошибки событие остается со статусом PENDING
+                            # и будет обработано в следующей итерации
+                            # Продолжаем обработку остальных событий
+
+                    # Commit всех успешно обработанных событий
+                    if processed_count > 0:
+                        await session.commit()
+                    else:
+                        await session.rollback()
 
             except Exception as e:
                 logger.error(f"Error in outbox worker: {e}", exc_info=True)
